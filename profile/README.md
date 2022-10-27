@@ -1,6 +1,6 @@
 ## Hi there 👋
 
-LibreSign is a digital document signer created and maintained by @LibreCodeCoop, a Brazilian cooperative of free software developers.
+LibreSign is a digital document signer created and maintained by [@LibreCodeCoop](https://github.com/LibreCodeCoop/), a Brazilian cooperative of free software developers.
 
 For support and donation, contact us by contact@librecode.coop
 
