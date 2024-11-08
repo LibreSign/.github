@@ -4,7 +4,7 @@ LibreSign is a digital document signer created and maintained by [@LibreCodeCoop
 
 For support and donation, contact us by contact@librecode.coop
 
-You also can support the project by https://www.patreon.com/libresign
+You also can support the project by https://github.com/sponsors/LibreSign
 
 Read more in:
 
