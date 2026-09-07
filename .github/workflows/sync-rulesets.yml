@@ -1,0 +1,43 @@
+name: Sync repository rulesets
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync rulesets for ${{ matrix.organization }}
+    runs-on: ubuntu-latest
+    environment: ruleset-sync
+
+    strategy:
+      fail-fast: false
+      matrix:
+        organization:
+          - LibreSign
+          - LibreCodeCoop
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.RULESET_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RULESET_APP_PRIVATE_KEY }}
+          owner: ${{ matrix.organization }}
+          permission-administration: write
+
+      - name: Sync rulesets
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ORG: ${{ matrix.organization }}
+        run: ./scripts/sync-rulesets.sh
