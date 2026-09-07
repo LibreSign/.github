@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ORG="${ORG:-LibreSign}"
+ORG="${ORG:?ORG must be set}"
 RULESET_FILE="${RULESET_FILE:-.github/rulesets/default-branches.json}"
 RULESET_NAME="$(jq -r '.name' "$RULESET_FILE")"
 
-gh repo list "$ORG" \
-  --limit 200 \
-  --json name,isArchived,visibility \
-  --jq '.[] |
-    select(.isArchived == false) |
-    select(.visibility == "PUBLIC") |
+gh api \
+  --paginate \
+  '/installation/repositories?per_page=100' \
+  --jq '.repositories[] |
+    select(.owner.login == "'"$ORG"'") |
+    select(.archived == false) |
+    select(.visibility == "public") |
     .name' |
 while read -r repo; do
   echo "=== $ORG/$repo ==="
