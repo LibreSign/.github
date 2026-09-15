@@ -166,23 +166,32 @@ ruleset_has_drift() {
   local desired_file="$3"
   local current desired
 
-  current="$(gh api "repos/$ORG/$repo/rulesets/$ruleset_id" | normalize_ruleset)"
-  desired="$(normalize_ruleset < "$desired_file")"
+  if ! current="$(gh api "repos/$ORG/$repo/rulesets/$ruleset_id" | normalize_ruleset)"; then
+    return 2
+  fi
+  if ! desired="$(normalize_ruleset < "$desired_file")"; then
+    return 2
+  fi
 
   [ "$current" != "$desired" ]
 }
 
 sync_repository() {
   local repo="$1"
-  local desired_file ruleset_id
+  local desired_file ruleset_id drift_status
 
   echo "=== $ORG/$repo ==="
 
   desired_file="$(mktemp)"
   TEMP_FILES+=("$desired_file")
-  build_ruleset "$repo" > "$desired_file"
+  if ! build_ruleset "$repo" > "$desired_file"; then
+    return $?
+  fi
 
-  ruleset_id="$(find_ruleset_id "$repo")"
+  if ! ruleset_id="$(find_ruleset_id "$repo")"; then
+    echo "Failed to read rulesets for $ORG/$repo" >&2
+    return 2
+  fi
 
   if [ -z "$ruleset_id" ]; then
     if [ "$CHECK_ONLY" = true ]; then
@@ -199,7 +208,18 @@ sync_repository() {
     return
   fi
 
-  if ! ruleset_has_drift "$repo" "$ruleset_id" "$desired_file"; then
+  if ruleset_has_drift "$repo" "$ruleset_id" "$desired_file"; then
+    drift_status=0
+  else
+    drift_status=$?
+  fi
+
+  if [ "$drift_status" -eq 2 ]; then
+    echo "Failed to compare ruleset for $ORG/$repo" >&2
+    return 2
+  fi
+
+  if [ "$drift_status" -eq 1 ]; then
     echo "OK: ruleset is up to date"
     return
   fi
@@ -225,7 +245,9 @@ main() {
   parse_args "$@"
 
   local failed=0 repo repositories
-  repositories="$(list_repositories)"
+  if ! repositories="$(list_repositories)"; then
+    return $?
+  fi
 
   while read -r repo; do
     [ -n "$repo" ] || continue
