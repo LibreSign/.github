@@ -118,7 +118,7 @@ build_ruleset() {
 
 find_ruleset_id() {
   local repo="$1"
-  gh api "repos/$ORG/$repo/rulesets" 2>/dev/null |
+  gh api "repos/$ORG/$repo/rulesets" |
     jq -r --arg name "$RULESET_NAME" '.[] | select(.name == $name) | .id' |
     head -n 1
 }
@@ -224,13 +224,15 @@ main() {
 
   parse_args "$@"
 
-  local failed=0 repo
+  local failed=0 repo repositories
+  repositories="$(list_repositories)"
+
   while read -r repo; do
     [ -n "$repo" ] || continue
     if ! sync_repository "$repo"; then
       failed=1
     fi
-  done < <(list_repositories)
+  done <<< "$repositories"
 
   return "$failed"
 }
