@@ -1,0 +1,30 @@
+name: Bats ruleset sync tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  bats:
+    name: Ruleset sync behavior and policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Install Bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes bats
+
+      - name: Run Bats
+        run: bats tests
