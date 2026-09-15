@@ -6,6 +6,14 @@ NEXTCLOUD_BOT="nextcloud-bot"
 NEXTCLOUD_BOT_ID="20296731"
 CHECK_ONLY=false
 TARGET_REPOSITORY=""
+TEMP_FILES=()
+
+cleanup() {
+  if [ "${#TEMP_FILES[@]}" -gt 0 ]; then
+    rm -f "${TEMP_FILES[@]}"
+  fi
+}
+trap cleanup EXIT
 
 usage() {
   cat <<'EOF'
@@ -66,20 +74,18 @@ is_nextcloud_app() {
   local repo="$1"
   local error_file
   error_file="$(mktemp)"
+  TEMP_FILES+=("$error_file")
 
   if gh api "repos/$ORG/$repo/contents/appinfo/info.xml" --silent >/dev/null 2>"$error_file"; then
-    rm -f "$error_file"
     return 0
   fi
 
   if grep -q 'HTTP 404' "$error_file"; then
-    rm -f "$error_file"
     return 1
   fi
 
   echo "Failed to detect whether $ORG/$repo is a Nextcloud app:" >&2
   cat "$error_file" >&2
-  rm -f "$error_file"
   return 2
 }
 
@@ -112,15 +118,46 @@ build_ruleset() {
 
 find_ruleset_id() {
   local repo="$1"
-  gh api "repos/$ORG/$repo/rulesets" \
-    --jq '.[] | select(.name == $name) | .id' \
-    -f name="$RULESET_NAME" \
-    2>/dev/null |
+  gh api "repos/$ORG/$repo/rulesets" 2>/dev/null |
+    jq -r --arg name "$RULESET_NAME" '.[] | select(.name == $name) | .id' |
     head -n 1
 }
 
 normalize_ruleset() {
-  jq -S '{name, target, enforcement, bypass_actors, conditions, rules}'
+  jq -S '
+    {
+      name,
+      target,
+      enforcement,
+      bypass_actors: [
+        .bypass_actors[] |
+        {
+          actor_id: (if .actor_type == "OrganizationAdmin" then null else .actor_id end),
+          actor_type,
+          bypass_mode
+        }
+      ] | sort_by([.actor_type, .actor_id]),
+      conditions,
+      rules: [
+        .rules[] |
+        if .type == "pull_request" then
+          {
+            type,
+            parameters: {
+              allowed_merge_methods: .parameters.allowed_merge_methods,
+              dismiss_stale_reviews_on_push: .parameters.dismiss_stale_reviews_on_push,
+              require_code_owner_review: .parameters.require_code_owner_review,
+              require_last_push_approval: .parameters.require_last_push_approval,
+              required_approving_review_count: .parameters.required_approving_review_count,
+              required_review_thread_resolution: .parameters.required_review_thread_resolution
+            }
+          }
+        else
+          {type}
+        end
+      ]
+    }
+  '
 }
 
 ruleset_has_drift() {
@@ -142,7 +179,7 @@ sync_repository() {
   echo "=== $ORG/$repo ==="
 
   desired_file="$(mktemp)"
-  trap 'rm -f "$desired_file"' RETURN
+  TEMP_FILES+=("$desired_file")
   build_ruleset "$repo" > "$desired_file"
 
   ruleset_id="$(find_ruleset_id "$repo")"
