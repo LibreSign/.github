@@ -13,18 +13,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  sync:
-    name: Sync rulesets for ${{ matrix.organization }}
+  discover:
+    name: Discover public repositories
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    outputs:
+      repositories: ${{ steps.repositories.outputs.repositories }}
+
+    steps:
+      - name: List repositories
+        id: repositories
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          repositories="$(
+            for organization in LibreSign LibreCodeCoop; do
+              gh api \
+                --paginate \
+                "orgs/$organization/repos?type=public&per_page=100" \
+                --jq '.[] | select(.archived == false) | [.owner.login, .name] | @tsv'
+            done |
+              jq -Rsc '
+                split("\n") |
+                map(
+                  select(length > 0) |
+                  split("\t") |
+                  {organization: .[0], repository: .[1]}
+                )
+              '
+          )"
+          echo "repositories=$repositories" >> "$GITHUB_OUTPUT"
+
+  sync:
+    name: Sync ${{ matrix.organization }}/${{ matrix.repository }}
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: ruleset-sync
 
     strategy:
       fail-fast: false
       matrix:
-        organization:
-          - LibreSign
-          - LibreCodeCoop
+        include: ${{ fromJSON(needs.discover.outputs.repositories) }}
 
     steps:
       - name: Checkout
@@ -32,17 +62,19 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Generate GitHub App token
+      - name: Generate repository-scoped GitHub App token
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           client-id: ${{ vars.RULESET_APP_CLIENT_ID }}
           private-key: ${{ secrets.RULESET_APP_PRIVATE_KEY }}
           owner: ${{ matrix.organization }}
+          repositories: ${{ matrix.repository }}
           permission-administration: write
 
-      - name: Sync rulesets
+      - name: Sync ruleset
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           ORG: ${{ matrix.organization }}
-        run: ./scripts/sync-rulesets.sh
+          TARGET_REPOSITORY: ${{ format('{0}/{1}', matrix.organization, matrix.repository) }}
+        run: ./scripts/sync-rulesets.sh --repo "$TARGET_REPOSITORY"
