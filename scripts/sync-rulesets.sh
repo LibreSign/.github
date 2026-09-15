@@ -2,6 +2,7 @@
 set -euo pipefail
 
 DEFAULT_RULESET_FILE=".github/rulesets/default-branches.json"
+LIBRESIGN_GITHUB_CI_RULESET_FILE=".github/rulesets/libresign-github-ci.json"
 NEXTCLOUD_BOT="nextcloud-bot"
 NEXTCLOUD_BOT_ID="20296731"
 CHECK_ONLY=false
@@ -70,6 +71,18 @@ list_repositories() {
       .name'
 }
 
+ruleset_files_for_repository() {
+  local repo="$1"
+
+  printf '%s\n' "$DEFAULT_RULESET_FILE"
+
+  case "$ORG/$repo" in
+    LibreSign/.github)
+      printf '%s\n' "$LIBRESIGN_GITHUB_CI_RULESET_FILE"
+      ;;
+  esac
+}
+
 is_nextcloud_app() {
   local repo="$1"
   local error_file
@@ -91,10 +104,18 @@ is_nextcloud_app() {
 
 build_ruleset() {
   local repo="$1"
-  local detection_status=0
+  local ruleset_file="${2:-${RULESET_FILE:-$DEFAULT_RULESET_FILE}}"
+  local ruleset_name detection_status=0
+
+  ruleset_name="$(jq -r '.name' "$ruleset_file")"
+
+  if [ "$ruleset_name" != "Protect default and stable branches" ]; then
+    cat "$ruleset_file"
+    return
+  fi
 
   if is_nextcloud_app "$repo"; then
-    echo "Nextcloud app detected; allowing $NEXTCLOUD_BOT to bypass the ruleset" >&2
+    echo "Nextcloud app detected; allowing $NEXTCLOUD_BOT to bypass the base ruleset" >&2
     jq \
       --argjson bot_id "$NEXTCLOUD_BOT_ID" \
       '.bypass_actors = (
@@ -102,14 +123,14 @@ build_ruleset() {
         + [{actor_id: $bot_id, actor_type: "User", bypass_mode: "always"}]
         | unique_by([.actor_type, .actor_id])
       )' \
-      "$RULESET_FILE"
+      "$ruleset_file"
     return
   else
     detection_status=$?
   fi
 
   if [ "$detection_status" -eq 1 ]; then
-    cat "$RULESET_FILE"
+    cat "$ruleset_file"
     return
   fi
 
@@ -118,8 +139,10 @@ build_ruleset() {
 
 find_ruleset_id() {
   local repo="$1"
+  local ruleset_name="$2"
+
   gh api "repos/$ORG/$repo/rulesets" |
-    jq -r --arg name "$RULESET_NAME" '.[] | select(.name == $name) | .id' |
+    jq -r --arg name "$ruleset_name" '.[] | select(.name == $name) | .id' |
     head -n 1
 }
 
@@ -152,10 +175,22 @@ normalize_ruleset() {
               required_review_thread_resolution: .parameters.required_review_thread_resolution
             }
           }
+        elif .type == "required_status_checks" then
+          {
+            type,
+            parameters: {
+              required_status_checks: [
+                .parameters.required_status_checks[] |
+                {context}
+              ] | sort_by(.context),
+              strict_required_status_checks_policy: .parameters.strict_required_status_checks_policy,
+              do_not_enforce_on_create: .parameters.do_not_enforce_on_create
+            }
+          }
         else
           {type}
         end
-      ]
+      ] | sort_by(.type)
     }
   '
 }
@@ -176,22 +211,24 @@ ruleset_has_drift() {
   [ "$current" != "$desired" ]
 }
 
-sync_repository() {
+sync_ruleset_file() {
   local repo="$1"
-  local desired_file ruleset_id drift_status status
+  local ruleset_file="$2"
+  local desired_file ruleset_id ruleset_name drift_status status
 
-  echo "=== $ORG/$repo ==="
+  ruleset_name="$(jq -r '.name' "$ruleset_file")"
+  echo "Policy: $ruleset_name"
 
   desired_file="$(mktemp)"
   TEMP_FILES+=("$desired_file")
-  if build_ruleset "$repo" > "$desired_file"; then
+  if build_ruleset "$repo" "$ruleset_file" > "$desired_file"; then
     :
   else
     status=$?
     return "$status"
   fi
 
-  if ruleset_id="$(find_ruleset_id "$repo")"; then
+  if ruleset_id="$(find_ruleset_id "$repo" "$ruleset_name")"; then
     :
   else
     status=$?
@@ -243,10 +280,24 @@ sync_repository() {
     --input "$desired_file"
 }
 
+sync_repository() {
+  local repo="$1"
+  local ruleset_file failed=0
+
+  echo "=== $ORG/$repo ==="
+
+  while read -r ruleset_file; do
+    [ -n "$ruleset_file" ] || continue
+    if ! sync_ruleset_file "$repo" "$ruleset_file"; then
+      failed=1
+    fi
+  done < <(ruleset_files_for_repository "$repo")
+
+  return "$failed"
+}
+
 main() {
   ORG="${ORG:?ORG must be set}"
-  RULESET_FILE="${RULESET_FILE:-$DEFAULT_RULESET_FILE}"
-  RULESET_NAME="$(jq -r '.name' "$RULESET_FILE")"
 
   parse_args "$@"
 
