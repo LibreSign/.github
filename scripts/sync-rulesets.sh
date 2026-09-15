@@ -178,19 +178,25 @@ ruleset_has_drift() {
 
 sync_repository() {
   local repo="$1"
-  local desired_file ruleset_id drift_status
+  local desired_file ruleset_id drift_status status
 
   echo "=== $ORG/$repo ==="
 
   desired_file="$(mktemp)"
   TEMP_FILES+=("$desired_file")
-  if ! build_ruleset "$repo" > "$desired_file"; then
-    return $?
+  if build_ruleset "$repo" > "$desired_file"; then
+    :
+  else
+    status=$?
+    return "$status"
   fi
 
-  if ! ruleset_id="$(find_ruleset_id "$repo")"; then
+  if ruleset_id="$(find_ruleset_id "$repo")"; then
+    :
+  else
+    status=$?
     echo "Failed to read rulesets for $ORG/$repo" >&2
-    return 2
+    return "$status"
   fi
 
   if [ -z "$ruleset_id" ]; then
@@ -244,9 +250,12 @@ main() {
 
   parse_args "$@"
 
-  local failed=0 repo repositories
-  if ! repositories="$(list_repositories)"; then
-    return $?
+  local failed=0 repo repositories status
+  if repositories="$(list_repositories)"; then
+    :
+  else
+    status=$?
+    return "$status"
   fi
 
   while read -r repo; do
