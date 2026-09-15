@@ -8,10 +8,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sync-rulesets
+  cancel-in-progress: false
+
 jobs:
   sync:
     name: Sync rulesets for ${{ matrix.organization }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: ruleset-sync
 
     strategy:
