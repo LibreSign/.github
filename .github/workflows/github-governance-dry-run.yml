@@ -59,7 +59,7 @@ jobs:
           permission-administration: write
 
       - name: Plan repository governance
-        uses: LibreCodeCoop/github-governance@45aacd16cf868a3a85ea0567798926ca1e20dca2
+        uses: LibreCodeCoop/github-governance@7e9079cbd80761460b2dfe4e4ebf887a6d283ee6
         with:
           token: ${{ steps.app-token.outputs.token }}
           repository: LibreSign/${{ matrix.repository }}
