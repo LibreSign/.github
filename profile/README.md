@@ -1,24 +1,22 @@
-## Hi there 👋
+# LibreSign
 
-LibreSign is a digital document signer created and maintained by [@LibreCodeCoop](https://github.com/LibreCodeCoop/), a Brazilian cooperative of free software developers.
+LibreSign is an open-source digital signature platform for organizations that
+want control over their document workflows, integrations and infrastructure.
 
-For support and donation, contact us by contact@librecode.coop
+It is developed in the open and maintained by LibreCode Coop, a Brazilian
+cooperative specialized in free software.
 
-You also can support the project by https://github.com/sponsors/LibreSign
+## For organizations
 
-Read more in:
+We provide professional services around LibreSign, including implementation,
+integration, customization, migration, maintenance and enterprise support.
 
-https://librecode.coop/ 
+If your organization needs help adopting or operating LibreSign, contact us at
+**contact@librecode.coop**.
 
-https://libresign.coop/
+- LibreSign: https://libresign.coop/
+- LibreCode Coop: https://librecode.coop/
+- GitHub Sponsors: https://github.com/sponsors/LibreSign
 
-<!--
-
-**Here are some ideas to get you started:**
-
-🙋‍♀️ A short introduction - what is your organization all about?
-🌈 Contribution guidelines - how can the community get involved?
-👩‍💻 Useful resources - where can the community find your docs? Is there anything else the community should know?
-🍿 Fun facts - what does your team eat for breakfast?
-🧙 Remember, you can do mighty things with the power of [Markdown](https://docs.github.com/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
--->
+Using LibreSign, contributing code, sponsoring development or contracting
+professional support all help sustain the project and its long-term maintenance.
