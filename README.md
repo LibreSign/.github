@@ -1,16 +1,18 @@
-# LibreSign organization automation
+# LibreSign organization configuration
 
-This repository contains GitHub organization configuration and automation specific
-to LibreSign.
+This repository contains the GitHub organization configuration and automation
+used by LibreSign.
 
-Shared governance implementation lives in
-`LibreCodeCoop/github-governance`. This repository keeps the LibreSign policy
-configuration, protected GitHub App credentials, and the workflow that invokes
-the shared implementation.
+LibreSign is an open-source digital signature platform for organizations that
+need control over their document-signing infrastructure, integrations and data.
 
-The current governance policy covers branch protection, pull request review
-requirements, stable branches, and conditional exceptions required by project
-automation.
+Commercial support, implementation and enterprise services are available through
+LibreCode Coop.
 
-Technical validation details are documented in
-[`docs/testing.md`](docs/testing.md).
+- Product: https://libresign.coop/
+- Services and support: https://librecode.coop/
+- Sponsor the project: https://github.com/sponsors/LibreSign
+
+Technical governance is powered by
+`LibreCodeCoop/github-governance`. Implementation details belong in the
+repository documentation rather than this README.
