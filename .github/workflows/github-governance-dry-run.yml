@@ -1,7 +1,13 @@
-name: GitHub governance dry run
+name: GitHub governance
 
 on:
   workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply governance changes
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -13,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: github-governance-dry-run
+  group: github-governance
   cancel-in-progress: false
 
 jobs:
@@ -39,8 +45,8 @@ jobs:
           )"
           echo "repositories=$repositories" >> "$GITHUB_OUTPUT"
 
-  plan:
-    name: Plan LibreSign/${{ matrix.repository }}
+  reconcile:
+    name: ${{ inputs.apply && 'Apply' || 'Plan' }} LibreSign/${{ matrix.repository }}
     needs: discover
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -67,9 +73,10 @@ jobs:
           repositories: ${{ matrix.repository }}
           permission-administration: write
 
-      - name: Plan repository governance
+      - name: Reconcile repository governance
         uses: LibreCodeCoop/github-governance@7e9079cbd80761460b2dfe4e4ebf887a6d283ee6
         with:
           token: ${{ steps.app-token.outputs.token }}
           repository: LibreSign/${{ matrix.repository }}
           config: ${{ github.workspace }}/governance.config.json
+          apply: ${{ inputs.apply && 'true' || 'false' }}
