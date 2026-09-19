@@ -1,17 +1,16 @@
 # LibreSign organization automation
 
-This repository centralizes shared GitHub organization automation for LibreSign and LibreCodeCoop.
+This repository contains GitHub organization configuration and automation specific
+to LibreSign.
 
-It helps keep repository governance consistent as the project grows, including branch protection policies, controlled exceptions required by project workflows, and automated validation of the configuration that manages those policies.
+Shared governance implementation lives in
+`LibreCodeCoop/github-governance`. This repository keeps the LibreSign policy
+configuration, protected GitHub App credentials, and the workflow that invokes
+the shared implementation.
 
-The repository currently delivers:
+The current governance policy covers branch protection, pull request review
+requirements, stable branches, and conditional exceptions required by project
+automation.
 
-- consistent branch protection rules across public repositories;
-- automatic support for Nextcloud translation workflows where required;
-- reduced administrative access scope for automation;
-- automated checks that help prevent regressions in repository governance.
-
-Technical and operational details are kept in [`docs/`](docs/):
-
-- [Ruleset synchronization](docs/ruleset-sync.md)
-- [Testing and validation](docs/testing.md)
+Technical validation details are documented in
+[`docs/testing.md`](docs/testing.md).
