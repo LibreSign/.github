@@ -2,6 +2,12 @@ name: GitHub governance dry run
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - governance.config.json
+      - .github/workflows/github-governance-dry-run.yml
 
 permissions:
   contents: read
