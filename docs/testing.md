@@ -1,35 +1,16 @@
 # Testing and validation
 
-The repository uses focused checks so each validation type has its own setup and failure signal.
+Shared governance behavior, policy composition, repository discovery and
+ruleset reconciliation are tested in `LibreCodeCoop/github-governance`.
 
-## Bats
+This repository validates its LibreSign-specific integration:
 
-Bats tests cover synchronization behavior and ruleset policy invariants.
+- `actionlint` validates GitHub Actions syntax and expressions;
+- `zizmor` audits GitHub Actions security;
+- the `GitHub governance` workflow performs scheduled and configuration-change
+  dry-runs;
+- manual reconciliation remains dry-run unless `apply=true` is explicitly
+  selected;
+- GitHub App credentials are protected by the `ruleset-sync` environment.
 
-Run locally with:
-
-```bash
-bats tests
-```
-
-The test suite covers Nextcloud and non-Nextcloud repositories, API error handling, bypass idempotency, repository targeting, ruleset normalization, and policy invariants.
-
-## ShellCheck
-
-Shell scripts are analyzed independently with ShellCheck:
-
-```bash
-shellcheck scripts/*.sh
-```
-
-## actionlint
-
-GitHub Actions workflow syntax and expressions are validated by the dedicated `actionlint` workflow.
-
-## zizmor
-
-GitHub Actions security is audited by the dedicated `zizmor` workflow. Analysis runs without access to the ruleset GitHub App credentials.
-
-## Dependency updates
-
-Third-party Actions are pinned to full commit SHAs. Dependabot checks GitHub Actions dependencies weekly and applies a seven-day cooldown before proposing updates.
+Third-party Actions are pinned to full commit SHAs.
