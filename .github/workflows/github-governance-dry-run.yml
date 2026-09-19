@@ -31,7 +31,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           repositories="$(
-            gh api               --paginate               "orgs/LibreSign/repos?type=public&per_page=100"               --jq '.[] | select(.archived == false) | .name' |
+            gh api \
+              --paginate \
+              "orgs/LibreSign/repos?type=public&per_page=100" \
+              --jq '.[] | select(.archived == false) | .name' |
               jq -Rsc 'split("\n") | map(select(length > 0))'
           )"
           echo "repositories=$repositories" >> "$GITHUB_OUTPUT"
