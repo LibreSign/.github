@@ -20,6 +20,7 @@ If your organization needs help adopting or operating LibreSign, contact us at
 **contact@librecode.coop**.
 
 - LibreSign: https://libresign.coop/
+- Roadmap: https://github.com/orgs/LibreSign/projects/2
 - LibreCode Coop: https://librecode.coop/
 - GitHub Sponsors: https://github.com/sponsors/LibreSign
 
