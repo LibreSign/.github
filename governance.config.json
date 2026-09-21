@@ -107,10 +107,39 @@
     }
   ],
   "repositories": {
-    ".github": {
+    "LibreSign/.github": {
       "policies": [
         "organization-config-ci"
-      ]
+      ],
+      "metadata": {
+        "description": "Shared GitHub organization configuration for LibreSign.",
+        "homepage": "https://libresign.coop",
+        "topics": [
+          "hacktoberfest",
+          "github",
+          "organization",
+          "libresign",
+          "github-actions"
+        ]
+      }
+    },
+    "LibreSign/libresign": {
+      "metadata": {
+        "topics": [
+          "hacktoberfest"
+        ]
+      }
+    },
+    "LibreSign/documentation": {
+      "metadata": {
+        "description": "Source for LibreSign public documentation.",
+        "homepage": "https://docs.libresign.coop",
+        "topics": [
+          "hacktoberfest",
+          "documentation",
+          "libresign"
+        ]
+      }
     }
   }
 }
