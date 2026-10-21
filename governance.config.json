@@ -44,6 +44,100 @@
         }
       ]
     },
+    "libresign-required-ci": {
+      "name": "Require LibreSign CI",
+      "target": "branch",
+      "enforcement": "active",
+      "bypass_actors": [
+        {
+          "actor_id": 0,
+          "actor_type": "OrganizationAdmin",
+          "bypass_mode": "pull_request"
+        }
+      ],
+      "conditions": {
+        "ref_name": {
+          "include": [
+            "~DEFAULT_BRANCH"
+          ],
+          "exclude": []
+        }
+      },
+      "rules": [
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "required_status_checks": [
+              {
+                "context": "DCO"
+              },
+              {
+                "context": "test-summary"
+              },
+              {
+                "context": "typescript-summary"
+              },
+              {
+                "context": "php-lint-summary"
+              },
+              {
+                "context": "eslint"
+              },
+              {
+                "context": "stylelint"
+              },
+              {
+                "context": "static-psalm-analysis"
+              },
+              {
+                "context": "php-cs"
+              },
+              {
+                "context": "openapi"
+              },
+              {
+                "context": "info.xml lint"
+              },
+              {
+                "context": "reuse-compliance-check"
+              },
+              {
+                "context": "Block unconventional commits"
+              },
+              {
+                "context": "phpunit-sqlite-summary"
+              },
+              {
+                "context": "phpunit-mysql-summary"
+              },
+              {
+                "context": "phpunit-mariadb-summary"
+              },
+              {
+                "context": "phpunit-pgsql-summary"
+              },
+              {
+                "context": "behat-sqlite-summary"
+              },
+              {
+                "context": "behat-mysql-summary"
+              },
+              {
+                "context": "behat-mariadb-summary"
+              },
+              {
+                "context": "behat-pgsql-summary"
+              },
+              {
+                "context": "playwright-summary"
+              }
+            ],
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false
+          }
+        }
+      ]
+    },
     "organization-config-ci": {
       "name": "Require organization configuration CI",
       "target": "branch",
@@ -124,6 +218,9 @@
       }
     },
     "LibreSign/libresign": {
+      "policies": [
+        "libresign-required-ci"
+      ],
       "metadata": {
         "topics": [
           "hacktoberfest"
