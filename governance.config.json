@@ -44,6 +44,68 @@
         }
       ]
     },
+    "libresign-dco": {
+      "name": "Require LibreSign DCO",
+      "target": "branch",
+      "enforcement": "active",
+      "bypass_actors": [],
+      "conditions": {
+        "ref_name": {
+          "include": [
+            "~DEFAULT_BRANCH"
+          ],
+          "exclude": []
+        }
+      },
+      "rules": [
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "required_status_checks": [
+              {
+                "context": "DCO"
+              }
+            ],
+            "strict_required_status_checks_policy": false,
+            "do_not_enforce_on_create": false
+          }
+        }
+      ]
+    },
+    "libresign-required-ci": {
+      "name": "Require LibreSign CI",
+      "target": "branch",
+      "enforcement": "disabled",
+      "bypass_actors": [
+        {
+          "actor_id": 0,
+          "actor_type": "OrganizationAdmin",
+          "bypass_mode": "pull_request"
+        }
+      ],
+      "conditions": {
+        "ref_name": {
+          "include": [
+            "~DEFAULT_BRANCH"
+          ],
+          "exclude": []
+        }
+      },
+      "rules": [
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "required_status_checks": [
+              {
+                "context": "ci-required"
+              }
+            ],
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false
+          }
+        }
+      ]
+    },
     "organization-config-ci": {
       "name": "Require organization configuration CI",
       "target": "branch",
@@ -124,6 +186,10 @@
       }
     },
     "LibreSign/libresign": {
+      "policies": [
+        "libresign-dco",
+        "libresign-required-ci"
+      ],
       "metadata": {
         "topics": [
           "hacktoberfest"
