@@ -53,7 +53,13 @@
       "name": "Require LibreSign DCO",
       "target": "branch",
       "enforcement": "active",
-      "bypass_actors": [],
+      "bypass_actors": [
+        {
+          "actor_id": 20296731,
+          "actor_type": "User",
+          "bypass_mode": "always"
+        }
+      ],
       "conditions": {
         "ref_name": {
           "include": [

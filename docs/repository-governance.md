@@ -15,7 +15,9 @@ ruleset.
   requires reviews, Code Owner approval and resolved review conversations.
 - `libresign-dco` is selected for `LibreSign/libresign` on its default branch.
   Its desired configuration is **active** and requires the `DCO` context.
-  No bypass actors are configured for this separate ruleset.
+  Only `nextcloud-bot` (GitHub user ID `20296731`) may bypass this ruleset
+  for direct Transifex translation pushes. Other contributors must pass
+  the DCO check.
 - `libresign-required-ci` is selected for `LibreSign/libresign` on its default
   branch. Its desired configuration is **disabled** while the repository lacks
   a validated aggregate `ci-required` check. It specifies one stable context
@@ -56,6 +58,11 @@ an administrator may exceptionally merge through a PR and should explain the
 reason in that PR. This exception does **not** authorize bypass of the
 separate DCO ruleset. Existing Code Owner and review requirements are defined
 by a different ruleset.
+
+The `nextcloud-bot` bypass applies only to the `libresign-dco` policy for
+`LibreSign/libresign`. It uses `always` mode because the bot pushes
+signed-off translations directly to `main`, without a PR status check.
+This user-level bypass is not limited to files under `l10n/`.
 
 Auto-merge only waits for checks configured as required; it does not wait
 for every workflow. Do not enable automatic merging as a way to skip failing CI.
