@@ -21,5 +21,6 @@ organization profile, community conventions and project governance so
 contributors can focus on improving the digital-signature platform.
 
 Maintainer information is available in the
-[repository governance guide](docs/repository-governance.md) and
+[repository governance guide](docs/repository-governance.md),
+[confidential advisory access policy](docs/security-advisory-access.md) and
 [testing and validation guide](docs/testing.md).
