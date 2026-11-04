@@ -1,0 +1,36 @@
+name: Advisory access policy tests
+
+on:
+  pull_request:
+    paths:
+      - scripts/reconcile-security-advisory-access.mjs
+      - tests/security-advisory-access.test.mjs
+      - security-advisory-access.config.json
+      - .github/workflows/security-advisory-access.yml
+      - .github/workflows/security-advisory-access-tests.yml
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/reconcile-security-advisory-access.mjs
+      - tests/security-advisory-access.test.mjs
+      - security-advisory-access.config.json
+      - .github/workflows/security-advisory-access.yml
+      - .github/workflows/security-advisory-access-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  policy-tests:
+    name: Advisory access policy tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run offline tests
+        run: node --test tests/security-advisory-access.test.mjs

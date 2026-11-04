@@ -1,0 +1,54 @@
+name: Reconcile private advisory access
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Grant missing team access (manual verification is read-only by default)
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '27 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-advisory-access
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Reconcile advisory response team
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      vars.ADVISORY_ACCESS_ENABLED == 'true' &&
+      (github.event_name != 'schedule' || vars.ADVISORY_ACCESS_AUTO_APPLY == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: security-advisory-access
+    steps:
+      - name: Checkout declarative policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Authenticate dedicated advisory GitHub App
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.ADVISORY_APP_CLIENT_ID }}
+          private-key: ${{ secrets.ADVISORY_APP_PRIVATE_KEY }}
+          owner: LibreSign # zizmor: ignore[github-app] strictly scoped installation
+          repositories: libresign
+          # The dedicated App must have ONLY repository security advisories:write.
+          # No other permissions are requested; never reuse the ruleset manager.
+
+      - name: Apply narrowly scoped team access
+        env:
+          ADVISORY_ACCESS_TOKEN: ${{ steps.app-token.outputs.token }}
+          ADVISORY_ALLOWED_REPOSITORY: LibreSign/libresign
+          ADVISORY_ALLOWED_TEAM: security-response
+          ADVISORY_ACCESS_APPLY: ${{ github.event_name == 'schedule' || inputs.apply }}
+        run: node scripts/reconcile-security-advisory-access.mjs
