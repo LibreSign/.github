@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { reconcileAdvisoryAccess, validatePolicy } from '../scripts/reconcile-security-advisory-access.mjs';
 
@@ -122,4 +123,16 @@ test('fails closed on invalid GHSA identifiers', async () => {
 
 test('does not accept unusable credentials', async () => {
   await assert.rejects(reconcileAdvisoryAccess({ policy, token: '' }), /Missing advisory access credentials/);
+});
+
+test('workflow requires explicit enablement and pins the dedicated App to a single repository', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/security-advisory-access.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /environment: security-advisory-access/);
+  assert.match(workflow, /vars\.ADVISORY_ACCESS_ENABLED/);
+  assert.match(workflow, /vars\.ADVISORY_ACCESS_AUTO_APPLY/);
+  assert.match(workflow, /repositories: libresign/);
+  assert.match(workflow, /owner: LibreSign/);
+  assert.match(workflow, /github\.ref == 'refs\/heads\/main'/);
+  assert.doesNotMatch(workflow, /permission-administration: write/);
+  assert.doesNotMatch(workflow, /permission-members: write/);
 });

@@ -36,7 +36,7 @@ jobs:
 
       - name: Authenticate dedicated advisory GitHub App
         id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0; zizmor: ignore[github-app] dedicated single-repository App has only advisory-write permission
         with:
           client-id: ${{ vars.ADVISORY_APP_CLIENT_ID }}
           private-key: ${{ secrets.ADVISORY_APP_PRIVATE_KEY }}
