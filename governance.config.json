@@ -9,11 +9,6 @@
           "actor_id": 0,
           "actor_type": "OrganizationAdmin",
           "bypass_mode": "pull_request"
-        },
-        {
-          "actor_id": 19381727,
-          "actor_type": "Team",
-          "bypass_mode": "pull_request"
         }
       ],
       "conditions": {
@@ -43,7 +38,7 @@
             "dismiss_stale_reviews_on_push": true,
             "require_code_owner_review": true,
             "require_last_push_approval": false,
-            "required_approving_review_count": 1,
+            "required_approving_review_count": 2,
             "required_review_thread_resolution": true
           }
         }
